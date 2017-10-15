@@ -7,20 +7,43 @@ namespace ArduinoReadSerialConsole
     class Program
     {
         static SerialPort _sSerialPort;
+
+        /// <summary>
+        /// First arg is the portname
+        /// Second arg is the baud rate
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
             try
             {
                 _sSerialPort = new SerialPort();
-                _sSerialPort.PortName = "COM4";
-                _sSerialPort.BaudRate = 9600;
+                string portName = "COM4";
+                if (args.Length > 0 &&
+                    !string.IsNullOrEmpty(args[0]))
+                {
+                    portName = args[0];
+                }
+                _sSerialPort.PortName = portName;
+                int baudRate;
+                if (args.Length <= 1 ||
+                    string.IsNullOrEmpty(args[1]) ||
+                    !int.TryParse(args[1], out baudRate))
+                {
+                    baudRate = 9600;
+                }
+                _sSerialPort.BaudRate = baudRate;
                 _sSerialPort.ReadTimeout = 5000;
                 _sSerialPort.Open();
 
                 while (true)
                 {
-                    Console.WriteLine("{0}: {1}", DateTime.Now, _sSerialPort.ReadLine());
-                    Thread.Sleep(100);
+                    string line = _sSerialPort.ReadLine();
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        Console.WriteLine("{0}", line);
+                    }
+                    Thread.Sleep(1);
                 }
             }
             catch (Exception ex)
